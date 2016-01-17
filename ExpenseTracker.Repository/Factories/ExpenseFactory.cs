@@ -12,7 +12,7 @@ namespace ExpenseTracker.Repository.Factories
 {
     public class ExpenseFactory
     {
-
+        
         public ExpenseFactory()
         {
 
@@ -44,5 +44,32 @@ namespace ExpenseTracker.Repository.Factories
             };
         }
          
+        public object CreateDataShapeObject(Expense expense, List<string> lstFields)
+        {
+            //entity to DTO
+            return CreateDataShapeObject(CreateExpense(expense), lstFields);
+        }
+
+        public object CreateDataShapeObject(DTO.Expense expense, List<string> lstFields)
+        {
+            if (!lstFields.Any())
+            {
+                return expense;
+            }
+            else
+            {
+                ExpandoObject objToReturn = new ExpandoObject();
+                foreach(var field in lstFields)
+                {
+                    var fieldValue = expense.GetType()
+                        .GetProperty(field, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)
+                        .GetValue(expense, null);
+                   
+                    ((IDictionary<string, object>)objToReturn).Add(field, fieldValue);
+                }
+
+                return objToReturn;
+            }
+        }
     }
 }

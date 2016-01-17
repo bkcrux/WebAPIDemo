@@ -13,6 +13,7 @@ using System.Web;
 
 namespace ExpenseTracker.API.Controllers
 {
+    [RoutePrefix("api")]
     public class ExpenseGroupsController : ApiController
     {
         IExpenseTrackerRepository _repository;
@@ -31,12 +32,21 @@ namespace ExpenseTracker.API.Controllers
             _repository = repository;
         }    
 
-
+        [Route("expensegroups", Name = "ExpenseGroupsList")]
         public IHttpActionResult Get(string sort = "id", string status = null, 
-            string userId = null, int page = 1, int pageSize = 5)
+            string userId = null, string fields = null, int page = 1, int pageSize = maxPageSize)
         {
             try
             {
+                //supports expenses or expenses.id
+                bool includeExpenses = false;
+                List<string> lstFields = new List<string>();
+                if (fields != null)
+                {
+                    lstFields = fields.ToLower().Split(',').ToList();
+                    includeExpenses = lstFields.Any(f => f.Contains("expenses"));    
+                }
+
 
                 int statusId = -1;
                 if (status != null)
@@ -54,11 +64,26 @@ namespace ExpenseTracker.API.Controllers
                     }
                 }
 
-                var expenseGroups = _repository.GetExpenseGroups()
-                    .ApplySort(sort)
+                IQueryable<Repository.Entities.ExpenseGroup> expenseGroups = null;
+                if (includeExpenses)
+                {
+                    expenseGroups = _repository.GetExpenseGroupsWithExpenses();
+                }
+                else
+                {
+                    expenseGroups = _repository.GetExpenseGroups();
+                }
+
+                expenseGroups = expenseGroups.ApplySort(sort)
                     .Where(eg => (statusId == -1 || eg.ExpenseGroupStatusId == statusId))
                     .Where(eg => (userId == null || eg.UserId == userId));
 
+
+                // ensure the page size isn't larger than the maximum.
+                if (pageSize > maxPageSize)
+                {
+                    pageSize = maxPageSize;
+                }
 
                 var totalCount = expenseGroups.Count();
                 var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
@@ -99,15 +124,12 @@ namespace ExpenseTracker.API.Controllers
                     Newtonsoft.Json.JsonConvert.SerializeObject(paginationHeader));
 
                 return Ok(expenseGroups
-                    .ApplySort(sort)
-                    .Where(eg => (statusId == -1 || eg.ExpenseGroupStatusId == statusId))
-                    .Where(eg => (userId == null || eg.UserId == userId))
-                    .Take(pageSize)
                     .Skip(pageSize * (page - 1))
+                    .Take(pageSize)
                     .ToList()                    
                     .Select(eg => _expenseGroupFactory.CreateExpenseGroup(eg)));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return InternalServerError();
             }

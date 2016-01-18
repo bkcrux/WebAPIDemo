@@ -96,6 +96,7 @@ namespace ExpenseTracker.API.Controllers
                         page = page - 1,
                         pageSize = pageSize,
                         sort = sort,
+                        fields = fields,
                         status = status,
                         userId = userId
                     }) : "";
@@ -106,6 +107,7 @@ namespace ExpenseTracker.API.Controllers
                         page = page + 1,
                         pageSize = pageSize,
                         sort = sort,
+                        fields = fields,
                         status = status,
                         userId = userId
                     }) : "";
@@ -121,13 +123,14 @@ namespace ExpenseTracker.API.Controllers
                 };
 
                 HttpContext.Current.Response.Headers.Add("X-Pagination", 
-                    Newtonsoft.Json.JsonConvert.SerializeObject(paginationHeader));
+                    Newtonsoft.Json.JsonConvert.SerializeObject(paginationHeader));                
 
                 return Ok(expenseGroups
                     .Skip(pageSize * (page - 1))
                     .Take(pageSize)
-                    .ToList()                    
-                    .Select(eg => _expenseGroupFactory.CreateExpenseGroup(eg)));
+                    .ToList()
+                    .Select(eg => _expenseGroupFactory.CreateDataShapeObject(eg, lstFields)));
+
             }
             catch (Exception)
             {

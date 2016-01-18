@@ -47,7 +47,61 @@ namespace ExpenseTracker.Repository.Factories
             };
         }
 
-         
-         
+        public object CreateDataShapeObject(ExpenseGroup expenseGroup, List<string> lstFields)
+        {
+            //entity to DTO
+            return CreateDataShapeObject(CreateExpenseGroup(expenseGroup), lstFields);
+        }
+
+        public object CreateDataShapeObject(DTO.ExpenseGroup expenseGroup, List<string> lstFields)
+        {
+            List<string> lstFieldsIncluded = new List<string>(lstFields);
+
+            if (!lstFieldsIncluded.Any())
+            {
+                return expenseGroup;
+            }
+            else
+            {
+                var lstExpenseFields = lstFieldsIncluded.Where(s => s.Contains("expenses")).ToList();
+
+                bool returnPartialExpense = lstFieldsIncluded.Any() && !lstFieldsIncluded.Contains("expenses");
+
+                if (returnPartialExpense)
+                {
+                    lstFieldsIncluded.RemoveRange(lstExpenseFields);
+                    lstExpenseFields = lstExpenseFields.Select(f => f.Substring(f.IndexOf(".") + 1)).ToList();
+                }
+                else
+                {
+                    lstExpenseFields.Remove("expenses");
+                    lstFieldsIncluded.RemoveRange(lstExpenseFields);
+                }
+
+
+                ExpandoObject objToReturn = new ExpandoObject();
+                foreach (var field in lstFieldsIncluded)
+                {
+                    var fieldValue = expenseGroup.GetType()
+                        .GetProperty(field, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance)
+                        .GetValue(expenseGroup, null);
+
+                    ((IDictionary<string, object>)objToReturn).Add(field, fieldValue);
+                }
+
+                if(returnPartialExpense)
+                {
+                    List<object> expenses = new List<object>();
+                    foreach(var expense in expenseGroup.Expenses)
+                    {
+                        expenses.Add(expenseFactory.CreateDataShapeObject(expense, lstExpenseFields));
+                    }
+                    ((IDictionary<string, object>)objToReturn).Add("expenses", expenses);
+                }
+
+                return objToReturn;
+            }
+        }
+
     }
 }

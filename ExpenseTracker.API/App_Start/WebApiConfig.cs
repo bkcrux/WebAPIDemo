@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Web.Http;
+using System.Web.Http.Cors;
 
 namespace ExpenseTracker.API
 {
@@ -12,6 +13,7 @@ namespace ExpenseTracker.API
     {
         public static HttpConfiguration Register()
         {
+
             var config = new HttpConfiguration();
 
             // Web API routes
@@ -33,6 +35,9 @@ namespace ExpenseTracker.API
                 = new CamelCasePropertyNamesContractResolver();
 
             config.MessageHandlers.Add(new CacheCow.Server.CachingHandler(config));
+
+            var cors = new EnableCorsAttribute("*", "*", "*");
+            config.EnableCors(cors);
 
             return config;
              

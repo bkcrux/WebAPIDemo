@@ -256,7 +256,6 @@ namespace ExpenseTracker.API.Controllers
             }
         }
 
-
         [HttpDelete]
         public IHttpActionResult Delete(int id)
         {
@@ -267,7 +266,7 @@ namespace ExpenseTracker.API.Controllers
                 {
                     return StatusCode(HttpStatusCode.NoContent);
                 }
-                else if (result.Status == RepositoryActionStatus.NotFound) ;
+                else if (result.Status == RepositoryActionStatus.NotFound) 
                 {
                     return StatusCode(HttpStatusCode.NotFound);
                 }

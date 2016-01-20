@@ -102,24 +102,69 @@ namespace ExpenseTracker.WebClient.Controllers
 
         // GET: ExpenseGroups/Edit/5
  
-        public ActionResult Edit(int id)
+        public async Task<ActionResult> Edit(int id)
         {
-            return View();
+            var client = ExpenseTrackerHttpClient.GetClient();
+            HttpResponseMessage response = await client.GetAsync("api/expensegroups/" + id);
+
+            if (response.IsSuccessStatusCode)
+            {
+                string content = await response.Content.ReadAsStringAsync();
+                var eg = JsonConvert.DeserializeObject<ExpenseGroup>(content);
+                return View(eg);
+            }
+            else
+            {
+                return Content("An error occurred.");
+            }
         }
 
         // POST: ExpenseGroups/Edit/5   
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, ExpenseGroup expenseGroup)
+        public async Task<ActionResult> Edit(int id, ExpenseGroup expenseGroup)
         {
-            return View();
+            try
+            {
+                var client = ExpenseTrackerHttpClient.GetClient();
+                StringContent sc = new StringContent(JsonConvert.SerializeObject(expenseGroup),
+                                        System.Text.Encoding.Unicode,
+                                        "application/json");
+
+                HttpResponseMessage response = await client.PutAsync("api/expensegroups/" + id, sc);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    return Content("An error occurred.");
+                }
+
+            }
+            catch (Exception)
+            {
+                return Content("An error occurred.");
+            }
+
         }
-         
+
 
         // POST: ExpenseGroups/Delete/5
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> Delete(int id)
         {
-            return View();
+            var client = ExpenseTrackerHttpClient.GetClient();
+            HttpResponseMessage response = await client.DeleteAsync("api/expensegroups/" + id);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return RedirectToAction("Index");
+            }
+            else
+            {
+                return Content("An error occurred.");
+            }
         }
     }
 }

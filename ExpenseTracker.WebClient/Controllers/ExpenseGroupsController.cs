@@ -2,6 +2,7 @@
 using ExpenseTracker.WebClient.Helpers;
 using ExpenseTracker.WebClient.Models;
 using Newtonsoft.Json;
+using PagedList;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +18,7 @@ namespace ExpenseTracker.WebClient.Controllers
     public class ExpenseGroupsController : Controller
     {
 
-        public async Task<ActionResult> Index()
+        public async Task<ActionResult> Index(int? page = 1)
         {
 
             var client = ExpenseTrackerHttpClient.GetClient();
@@ -36,12 +37,21 @@ namespace ExpenseTracker.WebClient.Controllers
                 return Content("An error occurred.");
             }
 
-            HttpResponseMessage response = await client.GetAsync("api/expensegroups");
+            HttpResponseMessage response = await client.GetAsync("api/expensegroups?sort=expensegroupstatusid,title&page=" + page + "&pagesize=5");
 
             if (response.IsSuccessStatusCode)
             {
                 string content = await response.Content.ReadAsStringAsync();
-                model.ExpenseGroups = JsonConvert.DeserializeObject<IList<ExpenseGroup>>(content);
+
+                var paging = HeaderParser.FindAndParsePaginationInfo(response.Headers);
+                model.paginationInfo = paging;
+
+                var lstExpGrps = JsonConvert.DeserializeObject<IEnumerable<ExpenseGroup>>(content);
+
+                var pgedExpGrps = new StaticPagedList<ExpenseGroup>(lstExpGrps, paging.CurrentPage,
+                    paging.PageSize, paging.TotalCount);
+
+                model.ExpenseGroups = pgedExpGrps;
             }
             else
             {
@@ -54,13 +64,27 @@ namespace ExpenseTracker.WebClient.Controllers
 
 
         // GET: ExpenseGroups/Details/5
-        public ActionResult Details(int id)
+        public async Task<ActionResult> Details(int id)
         {
-            return Content("Not implemented yet.");
+            var client = ExpenseTrackerHttpClient.GetClient();
+
+            HttpResponseMessage egsResponse = await client.GetAsync("api/expensegroups/" + id
+                + "?fields=id,description,title,expenses");
+
+            if (egsResponse.IsSuccessStatusCode)
+            {
+                string content = await egsResponse.Content.ReadAsStringAsync();
+                var model = JsonConvert.DeserializeObject<ExpenseGroup>(content);
+                return View(model);
+            }
+            else
+            {
+                return Content("An error occurred.");
+            }
         }
 
         // GET: ExpenseGroups/Create
- 
+
         public ActionResult Create()
         {
             return View();
@@ -97,7 +121,6 @@ namespace ExpenseTracker.WebClient.Controllers
             {
                 return Content("An error occurred.");
             }
-
         }
 
         // GET: ExpenseGroups/Edit/5

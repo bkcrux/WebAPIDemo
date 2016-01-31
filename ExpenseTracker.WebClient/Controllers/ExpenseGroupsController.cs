@@ -15,6 +15,7 @@ using System.Web.Mvc;
 
 namespace ExpenseTracker.WebClient.Controllers
 {
+    [Authorize]
     public class ExpenseGroupsController : Controller
     {
 
@@ -97,10 +98,14 @@ namespace ExpenseTracker.WebClient.Controllers
         {
             try
             {
-                expenseGroup.ExpenseGroupStatusId = 1;
-                expenseGroup.UserId = @"https://expensetrackeridsrv3/embedded_1";
+                var claimsIdentity = this.User.Identity as ClaimsIdentity;
+                var userId = claimsIdentity.FindFirst("unique_user_key").Value;
 
                 var client = ExpenseTrackerHttpClient.GetClient();
+
+                expenseGroup.ExpenseGroupStatusId = 1;
+                expenseGroup.UserId = userId;
+
                 StringContent sc = new StringContent(JsonConvert.SerializeObject(expenseGroup),
                                         System.Text.Encoding.Unicode,
                                         "application/json");

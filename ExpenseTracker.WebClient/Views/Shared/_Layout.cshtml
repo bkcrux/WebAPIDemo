@@ -24,10 +24,12 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li>@Html.ActionLink("Home", "Index", "ExpenseGroups")</li>
-                </ul>
-               
-            
-</div>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <li>@Html.ActionLink("(Logout)", "Logout", "Header")</li>
+                    }
+                </ul>            
+            </div>
         </div>
     </div>
     <div class="container body-content">

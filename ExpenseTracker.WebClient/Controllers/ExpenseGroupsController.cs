@@ -12,13 +12,13 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
+using Thinktecture.IdentityModel.Mvc;
 
 namespace ExpenseTracker.WebClient.Controllers
 {
-    [Authorize]
     public class ExpenseGroupsController : Controller
     {
-
+        [ResourceAuthorize("Read", "ExpenseGroup")]
         public async Task<ActionResult> Index(int? page = 1)
         {
 
@@ -129,7 +129,7 @@ namespace ExpenseTracker.WebClient.Controllers
         }
 
         // GET: ExpenseGroups/Edit/5
- 
+        [ResourceAuthorize("Write", "ExpenseGroup")]
         public async Task<ActionResult> Edit(int id)
         {
             var client = ExpenseTrackerHttpClient.GetClient();
@@ -150,6 +150,7 @@ namespace ExpenseTracker.WebClient.Controllers
         // POST: ExpenseGroups/Edit/5   
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [ResourceAuthorize("Write", "ExpenseGroup")]
         public async Task<ActionResult> Edit(int id, ExpenseGroup expenseGroup)
         {
             try

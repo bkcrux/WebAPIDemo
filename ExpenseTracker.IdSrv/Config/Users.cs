@@ -23,6 +23,11 @@ namespace ExpenseTracker.IdSrv.Config
                     {
                         new Claim(Constants.ClaimTypes.GivenName, "Kevin"),
                         new Claim(Constants.ClaimTypes.FamilyName, "Doxxx"),
+                        new Claim(Constants.ClaimTypes.Role, "WebReaderUser"),
+                        new Claim(Constants.ClaimTypes.Role, "WebWriterUser"),
+                        new Claim(Constants.ClaimTypes.Role, "MobileReaderUser"),
+                        new Claim(Constants.ClaimTypes.Role, "MobileWriterUser"),
+
                     }
                 },
                 new InMemoryUser
@@ -35,6 +40,9 @@ namespace ExpenseTracker.IdSrv.Config
                     {
                         new Claim(Constants.ClaimTypes.GivenName, "Sven"),
                         new Claim(Constants.ClaimTypes.FamilyName, "Jones"),
+                        new Claim(Constants.ClaimTypes.Role, "WebReaderUser"),
+                        new Claim(Constants.ClaimTypes.Role, "MobileReaderUser"),
+                        new Claim(Constants.ClaimTypes.Role, "MobileWriterUser"),
                     }
                 },
                 new InMemoryUser
@@ -47,6 +55,8 @@ namespace ExpenseTracker.IdSrv.Config
                     {
                         new Claim(Constants.ClaimTypes.GivenName, "Fred"),
                         new Claim(Constants.ClaimTypes.FamilyName, "Smith"),
+                        new Claim(Constants.ClaimTypes.Role, "MobileReaderUser"),
+                        new Claim(Constants.ClaimTypes.Role, "MobileWriterUser"),
                     }
                 },
 
@@ -60,6 +70,8 @@ namespace ExpenseTracker.IdSrv.Config
                     {
                         new Claim(Constants.ClaimTypes.GivenName, "Jimmy"),
                         new Claim(Constants.ClaimTypes.FamilyName, "Lawson"),
+                        new Claim(Constants.ClaimTypes.Role, "MobileReaderUser"),
+                        new Claim(Constants.ClaimTypes.Role, "MobileWriterUser"),
                     }
                 },
 

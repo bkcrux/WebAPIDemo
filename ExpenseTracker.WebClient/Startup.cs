@@ -3,6 +3,7 @@ using Microsoft.Owin;
 using Microsoft.Owin.Security;
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.OpenIdConnect;
+using Newtonsoft.Json.Linq;
 using Owin;
 using System;
 using System.Collections.Generic;
@@ -21,7 +22,9 @@ namespace ExpenseTracker.WebClient
         public void Configuration(IAppBuilder app)
         {
             JwtSecurityTokenHandler.InboundClaimTypeMap = new Dictionary<string, string>();
-            AntiForgeryConfig.UniqueClaimTypeIdentifier = "unique_user_key"; 
+            AntiForgeryConfig.UniqueClaimTypeIdentifier = "unique_user_key";
+
+            app.UseResourceAuthorization(new AuthorizationManager());
 
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
@@ -36,7 +39,7 @@ namespace ExpenseTracker.WebClient
                 RedirectUri = ExpenseTrackerConstants.ExpenseTrackerClient,
                 SignInAsAuthenticationType = "Cookies",
                 ResponseType = "code id_token token",
-                Scope = "openid profile",
+                Scope = "openid profile roles",
 
                 Notifications = new OpenIdConnectAuthenticationNotifications()
                 {
@@ -63,6 +66,8 @@ namespace ExpenseTracker.WebClient
                             Thinktecture.IdentityModel.Client.JwtClaimTypes.FamilyName,
                             userInfo.Value<string>("family_name"));
 
+                        var roles = userInfo.Value<JArray>("role").ToList();
+
                         var newIdentity = new ClaimsIdentity(
                             n.AuthenticationTicket.Identity.AuthenticationType,
                             Thinktecture.IdentityModel.Client.JwtClaimTypes.GivenName,
@@ -70,6 +75,14 @@ namespace ExpenseTracker.WebClient
 
                         newIdentity.AddClaim(givenNameClaim);
                         newIdentity.AddClaim(familyNameClaim);
+
+                        foreach (var role in roles)
+                        {
+                            newIdentity.AddClaim(new Claim(
+                                Thinktecture.IdentityModel.Client.JwtClaimTypes.Role,
+                                role.ToString()));
+                        }
+
 
                         var issuerClaim = n.AuthenticationTicket.Identity
                             .FindFirst(Thinktecture.IdentityModel.Client.JwtClaimTypes.Issuer);

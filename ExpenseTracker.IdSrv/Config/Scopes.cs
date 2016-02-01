@@ -14,6 +14,19 @@ namespace ExpenseTracker.IdSrv.Config
             {
                 StandardScopes.OpenId,
                 StandardScopes.Profile,
+                new Scope
+                {
+                    Enabled = true,
+                    Name = "roles",
+                    DisplayName = "Roles",
+                    Description = "The roles the user belongs to",
+                    Type = ScopeType.Identity,
+                    Claims = new List<ScopeClaim>
+                    {
+                        new ScopeClaim("role")
+                    }
+
+                },
             };
 
             return scopes;
